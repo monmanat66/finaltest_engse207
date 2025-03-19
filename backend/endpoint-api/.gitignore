@@ -1,6 +1,6 @@
 /node_modules
 package-lock.json
-server.crt
+server.cert
 server.key
-apiconfig.js
+server.csr
 .env
