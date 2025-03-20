@@ -143,7 +143,7 @@ const init = async () => {
 
     var tls = {
         key: fs.readFileSync('./server.key'),
-        cert: fs.readFileSync('./server.cert')
+        cert: fs.readFileSync('./server.crt')
     };
 
     //const server = Hapi.Server({

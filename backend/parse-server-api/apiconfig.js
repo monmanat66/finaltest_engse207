@@ -3,8 +3,8 @@ const apiconfig = {
         endpointAPI : 'https://localhost:8443/api/v1',
         endpointWS  : 'ws://localhost:3071',
 
-        parseServerAPI : 'https://localhost:4000/api',
-        parseServerWS  : 'wss://localhost:4000',
+        parseServerAPI : 'https://10.21.43.203:4000/api',
+        parseServerWS  : 'wss://10.21.43.203:4000',
 
         masterKey     : 'wallboardapi',
         clientKey     : 'wallboardapi',
