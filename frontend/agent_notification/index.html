@@ -312,136 +312,104 @@
     }
 
     function checkInput(status) {
-      if ($("#agent").val() == "") {
-        //alert("Please enter Agent Code");
-        $("#connectTime").empty().append("Please enter Agent Code !!");
+  if ($("#agent").val() == "") {
+    $("#connectTime").empty().append("Please enter Agent Code !!");
+    $("#agent").focus();
+  } else {
+    AgentCode = $("#agent").val();
+    const enteredPassword = $("#pass").val(); // 🔥 ดึงค่าพาสเวิร์ดจาก input
+    const correctPassword = "se123456"; // ✅ พาสเวิร์ดที่กำหนดไว้
 
-        $("#agent").focus();
-      } else {
-        AgentCode = $("#agent").val();
-
-        $.ajax({
-          url:
-            APIServer + "/getOnlineAgentByAgentCode?agentcode=" + AgentCode,
-          headers: {
-            Authorization:
-              "Bearer 1aaZ!ARgAQGuQzp00D5D000000.mOv2jmhXkfIsjgywpCIh7.HZpc6vED1LCbc90DTaVDJwdNqbTW5r4uZicv8AFfkOE1ialqnR8UN5.wnAgh090h",
-          },
-          timeout: 15000,
-          success: function (response) {
-            console.log(response);
-            console.log("response.error:" + response.error);
-            if (response.error == false) {
-              if (
-                response.data.IsLogin == 1 &&
-                response.data.AgentStatus != 9
-              ) {
-                wsChecks = "true";
-                console.log("new: " + wsChecks);
-                //$("#errMessage").hide();
-
-                agentData = response.data;
-
-                firstLogin(response.data);
-                $("#nodata").show();
-                $("#display").hide();
-                $("reports").show();
-                $("#buttonDisConnect").show();
-                $("#buttonCall").show();
-                $("#help-and-support").show();
-
-                $("#currentStatus").prop(
-                  "selectedIndex",
-                  response.data.AgentStatus - 1
-                );
-
-                $("#currentStatus").show();
-
-                $("#NotifyBtn").show();
-
-                $("#destAgent").show();
-                $("#agentMsg").show();
-                $("#SendMsgBtn").show();
-
-                IsLogin = 1;
-
-                //-------- Web Socket ----------
-                websocketConnect(status);
-                // return wsChecks;
-                //-------- Web Socket ----------
-
-                console.log(
-                  "checkInput status: " + response.data.AgentStatus
-                );
-                statusDisplay(response.data.AgentStatus);
-
-                $("#ConnectionStatus").empty().append("Connected");
-
-                console.log(" Agent Code  -> filled");
-                localStorage.setItem("agent", $("#agent").val());
-                console.log(localStorage.getItem("agent"));
-
-                //------------------------------------------
-
-                //-- parse-server-api request
-                $.ajax({
-                  type: "POST",
-                  url: parseServer + "/functions/postOnlineAgentListByTeam",
-                  headers: {
-                    "X-Parse-Application-Id": devAPI.appId,
-                    "X-Parse-Master-Key": devAPI.masterKey,
-                  },
-
-                  data: {
-                    AgentCode: agentData.agent_code,
-                    AgentName: agentData.AgentName,
-                    Queue: "0",
-                    AgentStatus: "1",
-                    AgentStatusCode: "4",
-                    IsLogin: 1,
-                  },
-                  success: function (result) {
-                    console.log("postOnlineAgentListByTeam: " + result);
-                  },
-                  // processData: false,
-                  //contentType: 'application/json',
-                  //dataType: "json",
-                  //contentType: 'multipart/form-data',
-                });
-              } else {
-                console.log(
-                  "[" + response.data.agent_code + "] Agent not loging"
-                );
-                $("#connectTime")
-                  .empty()
-                  .append(
-                    "[" + response.data.agent_code + "] Agent not loging"
-                  )
-                  .show();
-                wsChecks = false;
-              }
-            } else {
-              console.log("---- ERROR ------");
-              console.log(response);
-
-              //$("#statusLabel").empty().append(response.errMessage);
-              $("#connectTime").empty().append(response.errMessage);
-
-              wsChecks = false;
-              // return exit();
-            }
-          },
-          error: function (XMLHttpRequest, textStatus, errorThrown) {
-            console.log("ERROR: net::ERR_INTERNET_DISCONNECTED");
-            //$("#connectTime").empty().append("ERR_INTERNET_DISCONNECTED");
-            //$('#connectTime').empty().removeClass().addClass('badge bg-danger').append('ERR_INTERNET_DISCONNECTED');
-            $("#connectTime").empty().append("ERROR: INTERNET DISCONNECTED");
-          },
-        });
-
-        console.log(wsChecks);
-      }
+    // 🔴 ตรวจสอบว่ารหัสผ่านถูกต้องหรือไม่
+    if (enteredPassword !== correctPassword) {
+      console.log("Incorrect password!");
+      $("#connectTime").empty().append("Incorrect password! Please try again.");
+      return; // ❌ หยุดการทำงานหากรหัสผ่านผิด
     }
+
+    // ✅ ถ้ารหัสผ่านถูกต้องให้ดำเนินการดึงข้อมูลต่อ
+    $.ajax({
+      url: APIServer + "/getOnlineAgentByAgentCode?agentcode=" + AgentCode,
+      headers: {
+        Authorization:
+          "Bearer 1aaZ!ARgAQGuQzp00D5D000000.mOv2jmhXkfIsjgywpCIh7.HZpc6vED1LCbc90DTaVDJwdNqbTW5r4uZicv8AFfkOE1ialqnR8UN5.wnAgh090h",
+      },
+      timeout: 15000,
+      success: function (response) {
+        console.log(response);
+        if (response.error == false) {
+          if (response.data.IsLogin == 1 && response.data.AgentStatus != 9) {
+            wsChecks = "true";
+            console.log("new: " + wsChecks);
+            agentData = response.data;
+
+            firstLogin(response.data);
+            $("#nodata").show();
+            $("#display").hide();
+            $("reports").show();
+            $("#buttonDisConnect").show();
+            $("#buttonCall").show();
+            $("#help-and-support").show();
+
+            $("#currentStatus").prop("selectedIndex", response.data.AgentStatus - 1);
+            $("#currentStatus").show();
+            $("#NotifyBtn").show();
+            $("#destAgent").show();
+            $("#agentMsg").show();
+            $("#SendMsgBtn").show();
+
+            IsLogin = 1;
+            $('#queueBannerGroup').show();
+
+            websocketConnect(status);
+            statusDisplay(response.data.AgentStatus);
+            $("#ConnectionStatus").empty().append("Connected");
+
+            console.log(" Agent Code  -> filled");
+            localStorage.setItem("agent", $("#agent").val());
+
+            // ส่งข้อมูลไป Parse Server
+            $.ajax({
+              type: "POST",
+              url: parseServer + "/functions/postOnlineAgentListByTeam",
+              headers: {
+                "X-Parse-Application-Id": devAPI.appId,
+                "X-Parse-Master-Key": devAPI.masterKey,
+              },
+              data: {
+                AgentCode: agentData.agent_code,
+                AgentName: agentData.AgentName,
+                Queue: "0",
+                AgentStatus: "1",
+                AgentStatusCode: "4",
+                IsLogin: 1,
+              },
+              success: function (result) {
+                console.log("postOnlineAgentListByTeam: " + result);
+              },
+            });
+          } else {
+            console.log("[" + response.data.agent_code + "] Agent not logging");
+            $("#connectTime").empty().append("[" + response.data.agent_code + "] Agent not logging").show();
+            wsChecks = false;
+          }
+        } else {
+          console.log("---- ERROR ------");
+          $("#connectTime").empty().append(response.errMessage);
+          wsChecks = false;
+        }
+      },
+      error: function () {
+        console.log("ERROR: INTERNET DISCONNECTED");
+        $("#connectTime").empty().append("ERROR: INTERNET DISCONNECTED");
+      },
+    });
+
+    console.log(wsChecks);
+  }
+}
+
+
 
     
 
@@ -595,6 +563,7 @@
       $("#SendMsgBtn").hide();
       $("#help-and-support").hide();
       $("#currentStatus").hide();
+      $('#queueBannerGroup').hide();
 
       //-- parse-server-api request
       $.ajax({
@@ -840,6 +809,86 @@
       var selectedValue = currentStatus.value;
       alert("Selected Text: " + selectedText + " Value: " + selectedValue);
     }
+  
+    function bannerupdate() {
+  // ดึงค่าจากฟอร์มและแปลงค่า Queue เป็น Number
+  const queueValue = Number($("#queue").val().trim());
+  const bannerMessage = $("#banner").val().trim();
+
+  // 🔴 ตรวจสอบว่ามีการกรอกข้อมูลหรือไม่
+  if (queueValue === "" || bannerMessage === "") {
+    alert("Please enter both Queue and Banner Message!");
+    return;
+  }
+
+  // ✅ อัปเดตข้อความบนหน้าเว็บ
+  $("#connectTime").empty().append(`Queue: ${queueValue}, Message: ${bannerMessage}`);
+
+  // ✅ ส่งข้อมูลไปยังเซิร์ฟเวอร์ (Parse Server)
+  $.ajax({
+    type: "POST",
+    url: parseServer + "/functions/postWallBoardBanner",  // ใช้ URL ของฟังก์ชัน Parse Server
+    headers: {
+      "X-Parse-Application-Id": devAPI.appId,           // Application ID ของ Parse
+      "X-Parse-Master-Key": devAPI.masterKey,           // Master Key ของ Parse
+    },
+    data: {
+      BannerText: bannerMessage,  // ข้อความ Banner
+      Queue: queueValue,          // หมายเลข Queue (ตอนนี้เป็น Number)
+      IsDelete: 0,                // ใช้ 0 สำหรับการอัปเดต (ถ้าต้องการลบให้ใช้ 1)
+    },
+    success: function (result) {
+      // เมื่อคำขอสำเร็จ
+      console.log("postWallBoardBanner: " + result);
+      alert("Banner updated successfully!");  // แจ้งผู้ใช้
+    },
+    error: function (error) {
+      // เมื่อคำขอล้มเหลว
+      console.log("Error updating banner:", error);
+      alert("Failed to update banner. Please try again.");  // แจ้งข้อผิดพลาด
+    }
+  });
+
+}
+
+
+function bannerdelete() {
+  // ดึงค่าจากฟอร์ม
+  const queueValue = Number($("#queue").val().trim());  // แปลงค่า Queue เป็น Number
+  const bannerMessage = $("#banner").val().trim();
+
+  // 🔴 ตรวจสอบว่ามีการกรอกข้อมูลหรือไม่
+  if (queueValue === "" || bannerMessage === "") {
+    alert("Please enter both Queue and Banner Message to delete!");
+    return;
+  }
+
+  // ✅ ส่งข้อมูลไปยังเซิร์ฟเวอร์ (Parse Server) เพื่อทำการลบ
+  $.ajax({
+  type: "POST",
+  url: parseServer + "/functions/postWallBoardBanner",
+  headers: {
+    "X-Parse-Application-Id": devAPI.appId,
+    "X-Parse-Master-Key": devAPI.masterKey,
+  },
+  data: {
+    BannerText: bannerMessage,
+    Queue: queueValue,
+    IsDelete: 1,  // ลบ Banner
+  },
+  success: function (result) {
+    console.log("Response from server:", result);  // ตรวจสอบการตอบกลับจากเซิร์ฟเวอร์
+    alert("Banner deleted successfully!");  // แจ้งผู้ใช้
+  },
+  error: function (error) {
+    console.log("Error deleting banner:", error);  // แจ้งข้อผิดพลาดใน Console
+    alert("Failed to delete banner. Please try again.");
+  }
+});
+
+}
+
+
   </script>
 
   <!------------------------------------>
@@ -897,20 +946,6 @@
                   <option value="4">Not Ready</option>
                 </select>
               </div>
-
-              <!-- 
-                            <div class="input-group-sm mb-1">
-                                <input type="text" class="form-control form-control-sm" id="destAgent"
-                                    placeholder="Agent" />
-                                <input type="text" class="form-control form-control-sm" id="agentMsg"
-                                    placeholder="Type message here.." />
-                                <button id="SendMsgBtn" class="btn btn-warning btn-sm btn-block shadow"
-                                    onclick="checkInput('on')">
-                                    Send
-                                </button>
-                            </div> 
--->
-
               <div class="input-group mt-2">
                 <div class="col-xs-1">
                   <input type="text" class="form-control form-control-sm" id="destAgent" placeholder="Agent" />
@@ -925,6 +960,25 @@
                   <button id="SendMsgBtn" class="btn btn-warning btn-sm btn-block shadow" onclick="sendMessage()">
                     Send
                   </button>
+                </div>
+              </div>
+              <div class="input-group mt-2" id="queueBannerGroup" style="display: none;">
+                <div class="col-xs-1">
+                  <input type="text" class="form-control form-control-sm" id="queue" placeholder="Queue" />
+                </div>
+
+                <div class="col-xs-3">
+                  <input type="text" class="form-control form-control-sm" id="banner"
+                    placeholder="ข้อความ....." />
+                </div>
+
+                <div class="input-group-append">
+                  <button id="BannerBtn" class="btn btn-warning btn-sm btn-block shadow" onclick="bannerupdate()">
+                    update
+                  </button>
+                  <button id="deleteBannerBtn" class="btn btn-danger btn-sm btn-block mt-2" onclick="bannerdelete()">
+                    Delete Banner
+                  </button>                  
                 </div>
               </div>
             </div>

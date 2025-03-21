@@ -179,12 +179,12 @@ Parse.Cloud.define("postWallBoardBanner", async (request) => {
 
   // ตรวจสอบว่ามีข้อมูลที่จำเป็นหรือไม่
   if (!BannerText || Queue === undefined) {
-    returnCode = 1; // รหัสผิดพลาดถ้าข้อมูลไม่ครบ
+    returnCode = 1;
+    console.log("Missing parameters: BannerText or Queue");  // เพิ่มบันทึก
     return returnCode;
   }
 
   try {
-    // ตรวจสอบการลบข้อมูล (IsDelete == 1) 
     if (IsDelete === 1) {
       const query = new Parse.Query("WallboardBanners");
       query.equalTo("Queue", Queue);
@@ -197,23 +197,19 @@ Parse.Cloud.define("postWallBoardBanner", async (request) => {
       } else {
         console.log(`No banner found with Queue ${Queue}.`);
       }
-
-      return returnCode; // ลบข้อมูลเสร็จแล้ว
-
+      return returnCode; // คืนค่าหลังจากลบเสร็จแล้ว
     } else {
-      // ค้นหาบันทึกเดิมในกรณีที่ต้องการอัปเดต
+      // ส่วนสำหรับการอัปเดต
       const query = new Parse.Query("WallboardBanners");
       query.equalTo("Queue", Queue);
 
       let result = await query.first();
       if (result) {
-        // ถ้ามีข้อมูลแล้ว (Update)
         result.set("BannerText", BannerText);
         await result.save();
         console.log(`Banner with Queue ${Queue} updated successfully.`);
         returnCode = 9; // อัปเดตสำเร็จ
       } else {
-        // ถ้าไม่พบข้อมูล (Insert)
         const newBanner = new Parse.Object("WallboardBanners");
         newBanner.set("Queue", Queue);
         newBanner.set("BannerText", BannerText);
@@ -222,10 +218,11 @@ Parse.Cloud.define("postWallBoardBanner", async (request) => {
         returnCode = 0; // บันทึกสำเร็จ
       }
     }
-
     return returnCode;
   } catch (error) {
     console.error("Error:", error);
     return error.message;
   }
 });
+
+
