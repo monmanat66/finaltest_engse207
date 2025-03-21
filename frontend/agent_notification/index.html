@@ -811,13 +811,12 @@
     }
   
     function bannerupdate() {
-  // ดึงค่าจากฟอร์มและแปลงค่า Queue เป็น Number
-  const queueValue = Number($("#queue").val().trim());
+  const queueValue = parseInt($("#queue").val().trim(), 10);  // แปลงค่า Queue ให้เป็นตัวเลข
   const bannerMessage = $("#banner").val().trim();
 
   // 🔴 ตรวจสอบว่ามีการกรอกข้อมูลหรือไม่
-  if (queueValue === "" || bannerMessage === "") {
-    alert("Please enter both Queue and Banner Message!");
+  if (isNaN(queueValue) || bannerMessage === "") {
+    alert("กรุณากรอก Queue (เป็นตัวเลข) และ Banner Message!");
     return;
   }
 
@@ -831,12 +830,13 @@
     headers: {
       "X-Parse-Application-Id": devAPI.appId,           // Application ID ของ Parse
       "X-Parse-Master-Key": devAPI.masterKey,           // Master Key ของ Parse
+      "Content-Type": "application/json"                // เพิ่ม Content-Type เป็น application/json
     },
-    data: {
+    data: JSON.stringify({                             // ส่งข้อมูลในรูปแบบ JSON
       BannerText: bannerMessage,  // ข้อความ Banner
-      Queue: queueValue,          // หมายเลข Queue (ตอนนี้เป็น Number)
+      Queue: queueValue,          // หมายเลข Queue (เป็นตัวเลข)
       IsDelete: 0,                // ใช้ 0 สำหรับการอัปเดต (ถ้าต้องการลบให้ใช้ 1)
-    },
+    }),
     success: function (result) {
       // เมื่อคำขอสำเร็จ
       console.log("postWallBoardBanner: " + result);
@@ -845,48 +845,48 @@
     error: function (error) {
       // เมื่อคำขอล้มเหลว
       console.log("Error updating banner:", error);
-      alert("Failed to update banner. Please try again.");  // แจ้งข้อผิดพลาด
+      alert("ไม่สามารถอัปเดต Banner ได้ กรุณาลองใหม่อีกครั้ง.");
     }
   });
-
 }
 
 
-function bannerdelete() {
-  // ดึงค่าจากฟอร์ม
-  const queueValue = Number($("#queue").val().trim());  // แปลงค่า Queue เป็น Number
-  const bannerMessage = $("#banner").val().trim();
 
-  // 🔴 ตรวจสอบว่ามีการกรอกข้อมูลหรือไม่
-  if (queueValue === "" || bannerMessage === "") {
-    alert("Please enter both Queue and Banner Message to delete!");
-    return;
-  }
+// function bannerdelete() {
+//   const queueValue = parseInt($("#queue").val().trim(), 10);  // แปลงค่า Queue ให้เป็นตัวเลข
 
-  // ✅ ส่งข้อมูลไปยังเซิร์ฟเวอร์ (Parse Server) เพื่อทำการลบ
-  $.ajax({
-  type: "POST",
-  url: parseServer + "/functions/postWallBoardBanner",
-  headers: {
-    "X-Parse-Application-Id": devAPI.appId,
-    "X-Parse-Master-Key": devAPI.masterKey,
-  },
-  data: {
-    BannerText: bannerMessage,
-    Queue: queueValue,
-    IsDelete: 1,  // ลบ Banner
-  },
-  success: function (result) {
-    console.log("Response from server:", result);  // ตรวจสอบการตอบกลับจากเซิร์ฟเวอร์
-    alert("Banner deleted successfully!");  // แจ้งผู้ใช้
-  },
-  error: function (error) {
-    console.log("Error deleting banner:", error);  // แจ้งข้อผิดพลาดใน Console
-    alert("Failed to delete banner. Please try again.");
-  }
-});
+//   // 🔴 ตรวจสอบว่ามีการกรอกข้อมูลหรือไม่
+//   if (isNaN(queueValue)) {
+//     alert("กรุณากรอกหมายเลข Queue ที่ถูกต้อง!");
+//     return;
+//   }
 
-}
+//   // ส่งข้อมูลไปยัง Parse Server เพื่อทำการลบ
+//   $.ajax({
+//     type: "POST",
+//     url: parseServer + "/functions/postWallBoardBanner",  // ใช้ URL ของฟังก์ชัน Parse Server
+//     headers: {
+//       "X-Parse-Application-Id": devAPI.appId,           // Application ID ของ Parse
+//       "X-Parse-Master-Key": devAPI.masterKey,           // Master Key ของ Parse
+//       "Content-Type": "application/json"                // เพิ่ม Content-Type เป็น application/json
+//     },
+//     data: JSON.stringify({                             // ส่งข้อมูลในรูปแบบ JSON
+//       Queue: queueValue,          // หมายเลข Queue (เป็นตัวเลข)
+//       IsDelete: 1,                // ใช้ 1 สำหรับการลบ
+//     }),
+//     success: function (result) {
+//       // เมื่อคำขอสำเร็จ
+//       console.log("Banner deleted successfully:", result);
+//       alert("Banner deleted successfully!");
+//     },
+//     error: function (error) {
+//       // เมื่อคำขอล้มเหลว
+//       console.log("Error deleting banner:", error);
+//       alert("ไม่สามารถลบ Banner ได้ กรุณาลองใหม่อีกครั้ง.");
+//     }
+//   });
+// }
+
 
 
   </script>
@@ -976,9 +976,9 @@ function bannerdelete() {
                   <button id="BannerBtn" class="btn btn-warning btn-sm btn-block shadow" onclick="bannerupdate()">
                     update
                   </button>
-                  <button id="deleteBannerBtn" class="btn btn-danger btn-sm btn-block mt-2" onclick="bannerdelete()">
+                  <!-- <button id="deleteBannerBtn" class="btn btn-danger btn-sm btn-block mt-2" onclick="bannerdelete()">
                     Delete Banner
-                  </button>                  
+                  </button>                   -->
                 </div>
               </div>
             </div>
